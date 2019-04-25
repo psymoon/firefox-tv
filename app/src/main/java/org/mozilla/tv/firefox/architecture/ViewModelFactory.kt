@@ -17,6 +17,7 @@ import org.mozilla.tv.firefox.navigationoverlay.ToolbarViewModel
 import org.mozilla.tv.firefox.settings.SettingsViewModel
 import org.mozilla.tv.firefox.utils.ServiceLocator
 import org.mozilla.tv.firefox.webrender.WebRenderHintViewModel
+import org.mozilla.tv.firefox.webrender.WebRenderViewModel
 import org.mozilla.tv.firefox.webrender.cursor.CursorViewModel
 
 /**
@@ -67,15 +68,19 @@ class ViewModelFactory(
             ) as T
 
             OverlayHintViewModel::class.java -> OverlayHintViewModel(
-                    serviceLocator.sessionRepo,
-                    hintContentFactory.getCloseMenuHint()
+                serviceLocator.sessionRepo,
+                hintContentFactory.getCloseMenuHint()
             ) as T
 
             WebRenderHintViewModel::class.java -> WebRenderHintViewModel(
-                    serviceLocator.sessionRepo,
-                    serviceLocator.cursorEventRepo,
-                    serviceLocator.screenController,
-                    hintContentFactory.getOpenMenuHint()
+                serviceLocator.sessionRepo,
+                serviceLocator.cursorEventRepo,
+                serviceLocator.screenController,
+                hintContentFactory.getOpenMenuHint()
+            ) as T
+
+            WebRenderViewModel::class.java -> WebRenderViewModel(
+                serviceLocator.focusRepo
             ) as T
 
         // This class needs to either return a ViewModel or throw, so we have no good way of silently handling
