@@ -36,7 +36,6 @@ import org.mozilla.tv.firefox.MediaSessionHolder
 import org.mozilla.tv.firefox.R
 import org.mozilla.tv.firefox.ScreenControllerStateMachine.ActiveScreen
 import org.mozilla.tv.firefox.architecture.FirefoxViewModelProviders
-import org.mozilla.tv.firefox.architecture.FocusOnShowDelegate
 import org.mozilla.tv.firefox.ext.focusedDOMElement
 import org.mozilla.tv.firefox.ext.forceExhaustive
 import org.mozilla.tv.firefox.ext.isYoutubeTV
@@ -88,6 +87,7 @@ class WebRenderFragment : EngineViewLifecycleFragment(), Session.Observer {
     private val youtubeBackHandler by lazy { YouTubeBackHandler(engineView!!, activity as MainActivity) }
 
     private lateinit var webRenderViewModel: WebRenderViewModel
+    private lateinit var rootView: View
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -162,19 +162,19 @@ class WebRenderFragment : EngineViewLifecycleFragment(), Session.Observer {
         return layout
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        rootView = view
+    }
+
+    // TODO: this method needs to be renamed (#2053); preliminary onStart() setup
     override fun onEngineViewCreated(engineView: EngineView): Disposable? {
         return serviceLocator?.screenController?.currentActiveScreen?.subscribe {
             if (it == ActiveScreen.WEB_RENDER) {
                 // Cache focused DOM element just before WebView gains focus. See comment in
                 // FocusedDOMElementCacheInterface for details
                 engineView.focusedDOMElement.cache()
-
-                // EngineView focus may be lost after waking up from sleep & screen saver.
-                // Forcibly request focus onStart(), after DOMElement cache, IFF webRenderFragment
-                // is the current ActiveScreen
-                // TODO: move this when focus repo is in place (#1395)
-                // TODO: this method needs to be renamed (#2053); preliminary onStart() setup
-                engineView.asView().requestFocus()
             } else {
                 // Pause all the videos when transitioning out of [WebRenderFragment] to mitigate possible
                 // memory leak while clearing data. See [WebViewCache.clear] as well as #1720
@@ -185,6 +185,9 @@ class WebRenderFragment : EngineViewLifecycleFragment(), Session.Observer {
 
     override fun onStart() {
         super.onStart()
+
+        observeRequestFocus()
+                .addTo(startStopCompositeDisposable)
 
         /**
          * When calling getOrCreateEngineSession(), [SessionManager] lazily creates an [EngineSession]
@@ -241,9 +244,15 @@ class WebRenderFragment : EngineViewLifecycleFragment(), Session.Observer {
         cursor = null
     }
 
-    override fun onHiddenChanged(hidden: Boolean) {
-        FocusOnShowDelegate().onHiddenChanged(this, hidden)
-        super.onHiddenChanged(hidden)
+    private fun observeRequestFocus(): Disposable {
+        // EngineView focus may be lost after waking up from sleep & screen saver.
+        // Forcibly request focus onStart(), after DOMElement cache, IFF webRenderFragment
+        // is the current ActiveScreen
+        return webRenderViewModel.focusRequest
+                .subscribe { viewId ->
+                    val viewToFocus = rootView.findViewById<View>(viewId)
+                    viewToFocus.requestFocus()
+                }
     }
 
     fun loadUrl(url: String) {
