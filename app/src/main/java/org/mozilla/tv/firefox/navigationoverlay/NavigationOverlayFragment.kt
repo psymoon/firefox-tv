@@ -25,6 +25,7 @@ import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.rxkotlin.addTo
@@ -59,6 +60,7 @@ import org.mozilla.tv.firefox.telemetry.UrlTextInputLocation
 import org.mozilla.tv.firefox.utils.ServiceLocator
 import org.mozilla.tv.firefox.widget.InlineAutocompleteEditText
 import java.lang.ref.WeakReference
+import java.util.concurrent.TimeUnit
 
 private const val SHOW_UNPIN_TOAST_COUNTER_PREF = "show_upin_toast_counter"
 private const val MAX_UNPIN_TOAST_COUNT = 3
@@ -216,6 +218,17 @@ class NavigationOverlayFragment : Fragment() {
             .addTo(compositeDisposable)
         observePocketState()
             .addTo(compositeDisposable)
+        navigationOverlayViewModel.focusRequests
+                .subscribe { focusRequest ->
+                    view?.let { view -> focusRequest.requestOnFirstEnabled(view) }
+                }.addTo(compositeDisposable)
+        navigationOverlayViewModel.focusNodeForCurrentlyFocusedView
+                .subscribe { focusNode ->
+                    rootView.findViewById<View>(focusNode.viewId)?.let { focusedView ->
+                        focusNode.updateViewNodeTree(focusedView)
+                    }
+                }.addTo(compositeDisposable)
+
         HintBinder.bindHintsToView(hintViewModel, hintBarContainer, animate = false)
                 .forEach { compositeDisposable.add(it) }
     }
@@ -231,18 +244,18 @@ class NavigationOverlayFragment : Fragment() {
 
     private fun observeRequestFocus(): Disposable {
         return navigationOverlayViewModel.focusRequest
-            .subscribe { viewId ->
-                val viewToFocus = rootView.findViewById<View>(viewId)
-                viewToFocus?.requestFocus()
+            .subscribe { _ ->
+//                val viewToFocus = rootView.findViewById<View>(viewId)
+//                viewToFocus?.requestFocus()
             }
     }
 
     private fun observeFocusState(): Disposable {
         return navigationOverlayViewModel.focusUpdate
-            .subscribe { focusNode ->
-                rootView.findViewById<View>(focusNode.viewId)?.let { focusedView ->
-                    focusNode.updateViewNodeTree(focusedView)
-                }
+            .subscribe { _ ->
+//                rootView.findViewById<View>(focusNode.viewId)?.let { focusedView ->
+//                    focusNode.updateViewNodeTree(focusedView)
+//                }
             }
     }
 

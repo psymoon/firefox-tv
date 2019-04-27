@@ -8,6 +8,7 @@ import android.content.Context
 import mozilla.components.browser.engine.system.NestedWebView
 import mozilla.components.browser.engine.system.SystemEngineSession
 import mozilla.components.concept.engine.EngineSession
+import org.mozilla.tv.firefox.R
 
 /**
  * [AmazonWebView] requires ActivityContext in order to show 4K resolution rendering option (#277)
@@ -16,5 +17,7 @@ import mozilla.components.concept.engine.EngineSession
  * override the webView instance
  */
 fun EngineSession.resetView(context: Context) {
-    (this as SystemEngineSession).webView = NestedWebView(context)
+    (this as SystemEngineSession).webView = NestedWebView(context).apply {
+        this.id = R.id.nested_web_view
+    }
 }

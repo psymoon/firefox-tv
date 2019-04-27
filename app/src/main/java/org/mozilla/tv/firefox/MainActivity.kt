@@ -16,6 +16,7 @@ import android.view.View
 import androidx.lifecycle.Observer
 import io.sentry.Sentry
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.fragment_navigation_overlay_top_nav.navButtonBack
 import kotlinx.android.synthetic.main.overlay_debug.debugLog
 import mozilla.components.browser.session.Session
 import mozilla.components.concept.engine.EngineView
