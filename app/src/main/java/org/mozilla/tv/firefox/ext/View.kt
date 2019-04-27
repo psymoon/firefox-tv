@@ -17,3 +17,14 @@ val View.isEffectivelyVisible: Boolean get() {
     }
     return true
 }
+
+// TODO test this.  likely off by 1 error here
+fun View.itAndAncestorsAreVisible(generationsUp: Int = Int.MAX_VALUE): Boolean {
+    var generations = generationsUp
+    var node: View? = this
+    while (node != null && generations-- > 0) {
+        if (node.visibility != View.VISIBLE) return false
+        node = node.parent as? View
+    }
+    return true
+}

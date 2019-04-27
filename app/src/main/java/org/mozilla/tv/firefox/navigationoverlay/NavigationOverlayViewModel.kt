@@ -34,7 +34,11 @@ class NavigationOverlayViewModel(
             }
     }
 
-    val focusUpdate: Observable<FocusRepo.FocusNode> = focusRepo.focusUpdate.map { it.focusNode }
+    val focusUpdate: Observable<FocusRepo.OldFocusNode> = focusRepo.focusUpdate.map { it.focusNode }
+
+    val focusRequests = focusRepo.focusRequests
+
+    val focusNodeForCurrentlyFocusedView = focusRepo.focusNodeForCurrentlyFocusedView
 
     @Suppress("DEPRECATION")
     val viewIsSplit: LiveData<Boolean> = sessionRepo.legacyState.map {

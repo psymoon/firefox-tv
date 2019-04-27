@@ -4,7 +4,9 @@
 
 package org.mozilla.tv.firefox
 
+import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
+import org.junit.Assert.assertEquals
 import org.junit.Test
 
 /**
@@ -52,5 +54,22 @@ class RxTest {
         val observable3 = source.test()
 
         observable3.assertValues(3)
+    }
+
+    @Test
+    fun `display buffer behavior`() {
+        val numbers = Observable.just(1, 2, 3, 4, 5)
+
+        val basicBuffer = numbers.buffer(2)
+        assertEquals(
+                listOf(listOf(1, 2), listOf(3, 4), listOf(5)),
+                basicBuffer.test().values()
+        )
+
+        val slidingBuffer = numbers.buffer(2, 1)
+        assertEquals(
+                listOf(listOf(1, 2), listOf(2, 3), listOf(3, 4), listOf(4, 5), listOf(5)),
+                slidingBuffer.test().values()
+        )
     }
 }
