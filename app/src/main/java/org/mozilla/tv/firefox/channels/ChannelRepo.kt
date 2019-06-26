@@ -22,6 +22,7 @@ import org.mozilla.tv.firefox.channels.content.getNewsChannels
 import org.mozilla.tv.firefox.channels.content.getSportsChannels
 import org.mozilla.tv.firefox.channels.pinnedtile.PinnedTileImageUtilWrapper
 import org.mozilla.tv.firefox.channels.pinnedtile.PinnedTileRepo
+import org.mozilla.tv.firefox.session.SessionRepo
 import org.mozilla.tv.firefox.telemetry.TelemetryIntegration
 import org.mozilla.tv.firefox.utils.FormattedDomainWrapper
 import java.util.Collections
@@ -45,7 +46,8 @@ class ChannelRepo(
     application: Application,
     imageUtilityWrapper: PinnedTileImageUtilWrapper,
     formattedDomainWrapper: FormattedDomainWrapper,
-    private val pinnedTileRepo: PinnedTileRepo
+    private val pinnedTileRepo: PinnedTileRepo,
+    sessionRepo: SessionRepo
 ) {
     private val _sharedPreferences: SharedPreferences =
         application.getSharedPreferences(PREF_CHANNEL_REPO, Context.MODE_PRIVATE)
@@ -127,7 +129,7 @@ class ChannelRepo(
     }
 
     // FIXME: only available in SystemWebView
-    private fun loadEngineViewHistory(): List<ChannelTile> {
+    private fun loadWebViewHistory(): List<ChannelTile> {
         val engineSession = (sessionManager.getOrCreateEngineSession() as SystemEngineSession)
         val backForwardList = engineSession.webView.copyBackForwardList()
         val channelList = mutableListOf<ChannelTile>()
@@ -148,7 +150,10 @@ class ChannelRepo(
         return channelList
     }
 
-    private val historyTiles = Observable.just(loadEngineViewHistory())
+    private val historyTiles = sessionRepo.state
+            .map { it.currentUrl }
+            .distinctUntilChanged()
+            .map { loadWebViewHistory() }
 
     private val pinnedTiles = pinnedTileRepo.pinnedTiles
         // This takes place off of the main thread because PinnedTile.toChannelTile needs
