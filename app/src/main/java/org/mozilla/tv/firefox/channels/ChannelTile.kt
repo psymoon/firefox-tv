@@ -5,6 +5,7 @@
 package org.mozilla.tv.firefox.channels
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.view.View
 import android.view.ViewGroup
@@ -16,7 +17,7 @@ import org.mozilla.tv.firefox.ext.getDimenPixelSize
 import org.mozilla.tv.firefox.utils.PicassoWrapper
 import java.io.File
 
-enum class TileSource { BUNDLED, CUSTOM, POCKET, NEWS, SPORTS, MUSIC }
+enum class TileSource { HISTORY, BUNDLED, CUSTOM, POCKET, NEWS, SPORTS, MUSIC }
 
 /**
  * Backing data for a [RecyclerView] item in a channel
@@ -37,6 +38,7 @@ data class ChannelTile(
      */
     fun generateRemoveTileTitleStr(context: Context): String {
         return when (tileSource) {
+            TileSource.HISTORY -> "TODO" // TODO
             TileSource.BUNDLED, TileSource.CUSTOM ->
                 context.resources.getString(R.string.pinned_tiles_channel_remove_title, title)
             TileSource.POCKET -> throw NotImplementedError("pocket shouldn't be able to remove tiles")
@@ -107,6 +109,14 @@ sealed class ImageSetStrategy {
                 .load(file)
                 .placeholder(backup)
                 .into(imageView)
+        }
+    }
+
+    data class ByBitmap(val bitmap: Bitmap?) : ImageSetStrategy() {
+        override fun invoke(imageView: ImageView) {
+            bitmap?.apply {
+                imageView.setImageBitmap(this)
+            }
         }
     }
 }

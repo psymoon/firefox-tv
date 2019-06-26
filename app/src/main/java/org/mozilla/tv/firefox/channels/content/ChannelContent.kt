@@ -4,6 +4,7 @@
 
 package org.mozilla.tv.firefox.channels.content
 
+import android.graphics.Bitmap
 import org.mozilla.tv.firefox.channels.ImageSetStrategy
 
 /**
@@ -20,4 +21,6 @@ object ChannelContent {
      * for an example.
      */
     fun setImage(id: Int): ImageSetStrategy = ImageSetStrategy.ById(id)
+
+    fun setImage(bitmap: Bitmap?): ImageSetStrategy = ImageSetStrategy.ByBitmap(bitmap)
 }

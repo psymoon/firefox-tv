@@ -13,6 +13,9 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.Observables
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.BehaviorSubject
+import mozilla.components.browser.engine.system.SystemEngineSession
+import mozilla.components.browser.session.SessionManager
+import org.mozilla.tv.firefox.FirefoxApplication
 import org.mozilla.tv.firefox.channels.content.ChannelContent
 import org.mozilla.tv.firefox.channels.content.getMusicChannels
 import org.mozilla.tv.firefox.channels.content.getNewsChannels
@@ -22,6 +25,7 @@ import org.mozilla.tv.firefox.channels.pinnedtile.PinnedTileRepo
 import org.mozilla.tv.firefox.telemetry.TelemetryIntegration
 import org.mozilla.tv.firefox.utils.FormattedDomainWrapper
 import java.util.Collections
+import java.util.UUID
 
 private const val PREF_CHANNEL_REPO = "ChannelRepo"
 
@@ -45,6 +49,10 @@ class ChannelRepo(
 ) {
     private val _sharedPreferences: SharedPreferences =
         application.getSharedPreferences(PREF_CHANNEL_REPO, Context.MODE_PRIVATE)
+
+    private val sessionManager: SessionManager = (application as FirefoxApplication).components.sessionManager
+
+    fun getHistoryTiles() = historyTiles
 
     fun getPinnedTiles(): Observable<List<ChannelTile>> =
         pinnedTiles.filterNotBlacklisted(blacklistedPinnedIds)
@@ -117,6 +125,30 @@ class ChannelRepo(
 
         _sharedPreferences.edit().putStringSet(sharedPrefKey, blackList.toSet()).apply()
     }
+
+    // FIXME: only available in SystemWebView
+    private fun loadEngineViewHistory(): List<ChannelTile> {
+        val engineSession = (sessionManager.getOrCreateEngineSession() as SystemEngineSession)
+        val backForwardList = engineSession.webView.copyBackForwardList()
+        val channelList = mutableListOf<ChannelTile>()
+
+        for (i in 0 until backForwardList.size - 1) {
+            val currHistoryItem = backForwardList.getItemAtIndex(i)
+            val channelTile = ChannelTile(
+                    url = currHistoryItem.url,
+                    title = currHistoryItem.title,
+                    subtitle = null,
+                    setImage = ChannelContent.setImage(currHistoryItem.favicon),
+                    tileSource = TileSource.HISTORY,
+                    id = UUID.randomUUID().toString())
+
+            channelList.add(channelTile)
+        }
+
+        return channelList
+    }
+
+    private val historyTiles = Observable.just(loadEngineViewHistory())
 
     private val pinnedTiles = pinnedTileRepo.pinnedTiles
         // This takes place off of the main thread because PinnedTile.toChannelTile needs
