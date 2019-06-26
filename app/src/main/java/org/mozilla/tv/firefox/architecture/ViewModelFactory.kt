@@ -59,6 +59,7 @@ class ViewModelFactory(
                 serviceLocator.sessionRepo,
                 serviceLocator.focusRepo,
                 ChannelTitles(
+                    history = "Recently Viewed", // TODO: string export
                     pinned = app.getString(R.string.pinned_tile_channel_title),
                     newsAndPolitics = resources.getString(R.string.news_channel_title),
                     sports = resources.getString(R.string.sports_channel_title),

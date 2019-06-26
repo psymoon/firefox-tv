@@ -17,6 +17,7 @@ import org.mozilla.tv.firefox.session.SessionRepo
 import org.mozilla.tv.firefox.utils.URLs
 
 class ChannelTitles(
+    val history: String,
     val pinned: String,
     val newsAndPolitics: String,
     val sports: String,
@@ -41,6 +42,9 @@ class NavigationOverlayViewModel(
     val viewIsSplit: LiveData<Boolean> = sessionRepo.legacyState.map {
         it.currentUrl != URLs.APP_URL_HOME
     }
+
+    val histroyTiles: Observable<ChannelDetails> = channelRepo.getHistoryTiles()
+        .map { ChannelDetails(title = channelTitles.history, tileList = it) }
 
     val pinnedTiles: Observable<ChannelDetails> = channelRepo.getPinnedTiles()
         .map { ChannelDetails(title = channelTitles.pinned, tileList = it) }
