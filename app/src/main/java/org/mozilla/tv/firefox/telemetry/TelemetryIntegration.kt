@@ -98,6 +98,7 @@ open class TelemetryIntegration protected constructor(
         val FORWARD = "forward"
         val ON = "on"
         val OFF = "off"
+        val TILE_HISTORY = "history"
         val TILE_BUNDLED = "bundled"
         val TILE_CUSTOM = "custom"
         val TILE_POCKET = "pocket"
@@ -391,6 +392,7 @@ open class TelemetryIntegration protected constructor(
     private fun boolToOnOff(boolean: Boolean) = if (boolean) Value.ON else Value.OFF
 
     private fun getTileTypeAsStringValue(tile: ChannelTile) = when (tile.tileSource) {
+        TileSource.HISTORY -> Value.TILE_HISTORY
         TileSource.BUNDLED -> Value.TILE_BUNDLED
         TileSource.CUSTOM -> Value.TILE_CUSTOM
         TileSource.POCKET -> Value.TILE_POCKET

@@ -70,6 +70,9 @@ class ChannelRepo(
 
     fun removeChannelContent(tileData: ChannelTile) {
         when (tileData.tileSource) {
+            TileSource.HISTORY -> {
+                // TODO
+            }
             TileSource.CUSTOM -> {
                 TelemetryIntegration.INSTANCE.homeTileRemovedEvent(tileData)
                 pinnedTileRepo.removePinnedTile(tileData.url)

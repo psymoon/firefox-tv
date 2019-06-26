@@ -267,6 +267,13 @@ class NavigationOverlayFragment : Fragment() {
             }
     }
 
+    private fun observeHistoryTiles(): Disposable {
+        return navigationOverlayViewModel.histroyTiles.subscribe {
+            histroyChannel.setTitle(it.title)
+            histroyChannel.setContents(it.tileList)
+        }
+    }
+
     private fun observePinnedTiles(): Disposable {
         return navigationOverlayViewModel.pinnedTiles.subscribe {
             pinnedTileChannel.setTitle(it.title)
