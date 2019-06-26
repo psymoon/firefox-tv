@@ -127,6 +127,7 @@ class NavigationOverlayFragment : Fragment() {
     private lateinit var hintViewModel: HintViewModel
 
     private var channelReferenceContainer: ChannelReferenceContainer? = null // references a Context, must be nulled.
+    private val histroyChannel: DefaultChannel get() = channelReferenceContainer!!.historyChannel
     private val pinnedTileChannel: DefaultChannel get() = channelReferenceContainer!!.pinnedTileChannel
     private val pocketChannel: DefaultChannel get() = channelReferenceContainer!!.pocketChannel
     private val newsChannel: DefaultChannel get() = channelReferenceContainer!!.newsChannel
@@ -192,6 +193,7 @@ class NavigationOverlayFragment : Fragment() {
         canShowUnpinToast = true
 
         channelReferenceContainer = ChannelReferenceContainer(channelsContainer, createChannelFactory()).also {
+            channelsContainer.addView(it.historyChannel.channelContainer)
             channelsContainer.addView(it.pocketChannel.channelContainer)
             channelsContainer.addView(it.pinnedTileChannel.channelContainer)
             channelsContainer.addView(it.newsChannel.channelContainer)
@@ -447,6 +449,12 @@ private class ChannelReferenceContainer(
     channelContainerView: ViewGroup,
     channelFactory: DefaultChannelFactory
 ) {
+
+    val historyChannel = channelFactory.createChannel(
+        parent = channelContainerView,
+        id = R.id.history_channel,
+        channelConfig = ChannelConfig.getPinnedTileConfig(channelContainerView.context)
+    )
 
     val pocketChannel = channelFactory.createChannel(
         parent = channelContainerView,
