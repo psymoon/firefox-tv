@@ -7,6 +7,7 @@ package org.mozilla.tv.firefox.webrender
 import android.content.Context
 import mozilla.components.browser.engine.system.SystemEngine
 import mozilla.components.browser.session.SessionManager
+import mozilla.components.browser.session.storage.SessionStorage
 import mozilla.components.concept.engine.DefaultSettings
 import mozilla.components.concept.engine.Engine
 import mozilla.components.feature.session.SessionUseCases
@@ -14,6 +15,7 @@ import mozilla.components.support.utils.SafeIntent
 import org.mozilla.tv.firefox.R
 import org.mozilla.tv.firefox.utils.BuildConstants
 import org.mozilla.tv.firefox.utils.Settings
+import java.util.concurrent.TimeUnit
 
 /**
  * Helper class for lazily instantiating and keeping references to components needed by the
@@ -51,7 +53,17 @@ class WebRenderComponents(applicationContext: Context, systemUserAgent: String) 
         ))
     }
 
-    val sessionManager by lazy { SessionManager(engine) }
+    private val sessionStorage by lazy { SessionStorage(applicationContext, engine) }
+
+    val sessionManager by lazy {
+        SessionManager(engine).apply {
+            // For persisting sessions after onDestroy()
+            sessionStorage.autoSave(this)
+                .periodicallyInForeground(interval = 30, unit = TimeUnit.SECONDS)
+                .whenGoingToBackground()
+                .whenSessionsChange()
+        }
+    }
 
     val sessionUseCases by lazy { SessionUseCases(sessionManager) }
 }
